@@ -1,4 +1,4 @@
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, UserUpdateProfile, UserUpdateForm
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -12,8 +12,8 @@ def register(request):
 			form.save()
 
 			username = form.cleaned_data.get('username')
-			messages.success (request, f'Your account has been created!')
-			return redirect ('ideabox-home')
+			messages.success (request, f'Your account has been created! Login to access your account.')
+			return redirect ('login')
 	else:
 
 		form  = UserRegisterForm()
@@ -24,7 +24,27 @@ def register(request):
 def profile(request):
 	return render(request, 'users/profile.html')
 
+@login_required
+def profile(request):
 
 
+	if request.method == 'POST':
+		user_form = UserUpdateForm(request.POST, instance=request.user)
+		profile_form = UserUpdateProfile(request.POST, request.FILES, instance=request.user.profile)
 
+		if user_form.is_valid() and profile_form.is_valid():
+			user_form.save()
+			profile_form.save()
+
+			messages.success(request, f'Account Updated!')
+			return redirect('profile')
+
+	user_form = UserUpdateForm(instance=request.user)
+	profile_form = UserUpdateProfile()
+
+	context = {
+		'user_form': user_form,
+		'profile_form': profile_form
+	}
+	return render(request, 'users/profile.html', context)
 
