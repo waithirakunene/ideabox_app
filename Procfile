@@ -1,0 +1,1 @@
+web: gunicorn ideabox_app.wsgi
